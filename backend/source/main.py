@@ -1,6 +1,7 @@
-from litestar import Litestar, get
+from litestar import Litestar, get, post
 from litestar.exceptions import HTTPException
 from dataclasses import dataclass
+from typing import Any
 
 
 
@@ -10,11 +11,7 @@ class TodoItem:
     done: bool
 
 
-TODO_LIST: list[TodoItem] = [
-    TodoItem(title="Start writing TODO list", done=True),
-    TodoItem(title="???", done=False),
-    TodoItem(title="Profit", done=False),
-]
+TODO_LIST: list[TodoItem] = []
 
 
 
@@ -35,8 +32,16 @@ async def get_list(done: bool | None = None) -> list[TodoItem]:
     return [item for item in TODO_LIST if item.done == done]
 
 
+
+@post("/")
+async def add_item(data: TodoItem) -> list[TodoItem]:
+    TODO_LIST.append(data)
+    return TODO_LIST
+
+
+
 app = Litestar(
-    [index, get_list]
+    [index, get_list, add_item]
 )
 
 

@@ -25,15 +25,14 @@ async def index() -> str:
 
 
 # filtering data using query parameters
+# making query parameter optional
+
 
 @get("/list")
-async def get_list(done: str) -> list[TodoItem]:
-    if done == "1":
-        return [item for item in TODO_LIST if item.done]
-    if done == "0":
-        return [item for item in TODO_LIST if not item.done]
-    raise HTTPException(f"Invalid query parameter value: {done!r}", status_code=400)
-
+async def get_list(done: bool | None = None) -> list[TodoItem]:
+    if done is None:
+        return TODO_LIST
+    return [item for item in TODO_LIST if item.done == done]
 
 
 app = Litestar(

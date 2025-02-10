@@ -3,14 +3,17 @@ from dataclasses import dataclass
 
 
 
+@dataclass
+class TodoItem:
+    title: str
+    done: bool
 
 
-TODO_LIST: list[dict[str, str | bool]] = [
-    {"title": "Start writing TODO list", "done": True},
-    {"title": "???", "done": False},
-    {"title": "Profit", "done": False},
+TODO_LIST: list[TodoItem] = [
+    TodoItem(title="Start writing TODO list", done=True),
+    TodoItem(title="???", done=False),
+    TodoItem(title="Profit", done=False),
 ]
-
 
 
 
@@ -21,7 +24,7 @@ async def index() -> str:
 
 
 @get("/list")
-async def get_list() -> list[dict[str, str | bool]]:
+async def get_list() -> list[TodoItem]:
     return TODO_LIST
 
 

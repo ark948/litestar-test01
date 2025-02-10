@@ -1,0 +1,3 @@
+> pip install litestar[standard]
+> pip install litestar[aiosqlite]
+> pip install aiosqlite

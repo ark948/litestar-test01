@@ -1,8 +1,7 @@
-from litestar import Litestar, get, post, put
-from litestar.exceptions import HTTPException, NotFoundException
 from dataclasses import dataclass
-from typing import Any
 
+from litestar import Litestar, get, post, put
+from litestar.exceptions import NotFoundException
 
 
 @dataclass
@@ -18,18 +17,17 @@ TODO_LIST: list[TodoItem] = [
 ]
 
 
-
-@get('/')
-async def index() -> str:
-    return "Hello World."
-
-
-
-# filtering data using query parameters
-# making query parameter optional
+def get_todo_by_title(todo_name) -> TodoItem:
+    for item in TODO_LIST:
+        if item.title == todo_name:
+            return item
+    raise NotFoundException(detail=f"TODO {todo_name!r} not found")
 
 
-@get("/list")
+
+# query param (only exists in function params)
+# here data is a query param and it is optional
+@get("/")
 async def get_list(done: bool | None = None) -> list[TodoItem]:
     if done is None:
         return TODO_LIST
@@ -43,15 +41,8 @@ async def add_item(data: TodoItem) -> list[TodoItem]:
     return TODO_LIST
 
 
-
-def get_todo_by_title(todo_name) -> TodoItem:
-    for item in TODO_LIST:
-        if item.title == todo_name:
-            return item
-    raise NotFoundException(detail=f"TODO {todo_name!r} not found")
-
-
-
+# path param also exists in route handler decorator
+# it is required
 @put("/{item_title:str}")
 async def update_item(item_title: str, data: TodoItem) -> list[TodoItem]:
     todo_item = get_todo_by_title(item_title)
@@ -60,10 +51,6 @@ async def update_item(item_title: str, data: TodoItem) -> list[TodoItem]:
     return TODO_LIST
 
 
-
-
 app = Litestar(
-    [index, get_list, add_item, update_item]
+    [get_list, add_item, update_item]
 )
-
-

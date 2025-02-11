@@ -9,6 +9,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from litestar import Litestar, get, post, put
 from litestar.datastructures import State
+from litestar.contrib.sqlalchemy.plugins import SQLAlchemyPlugin
 from litestar.contrib.sqlalchemy.plugins import (
     SQLAlchemyAsyncConfig,
     SQLAlchemyInitPlugin,
@@ -110,5 +111,5 @@ app = Litestar(
     route_handlers=[get_list, add_item, update_item],
     dependencies={"transaction": provide_transaction},
     lifespan=[db_connection],
-    plugins=[SQLAlchemySerializationPlugin()]
+    plugins=[SQLAlchemyPlugin(db_config)]
 )

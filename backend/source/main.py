@@ -9,7 +9,11 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from litestar import Litestar, get, post, put
 from litestar.datastructures import State
-from litestar.contrib.sqlalchemy.plugins import SQLAlchemySerializationPlugin
+from litestar.contrib.sqlalchemy.plugins import (
+    SQLAlchemyAsyncConfig,
+    SQLAlchemyInitPlugin,
+    SQLAlchemySerializationPlugin,
+)
 from litestar.exceptions import ClientException, NotFoundException
 from litestar.status_codes import HTTP_409_CONFLICT
 
@@ -46,13 +50,15 @@ sessionmaker = async_sessionmaker(expire_on_commit=False)
 
 # using dependency injection to centralize session creation
 # (instead of initializing session in every route)
-async def provide_transaction(state: State) -> AsyncGenerator[AsyncSession, None]:
-    async with sessionmaker(bind=state.engine) as session:
-        try:
-            async with session.begin():
-                yield session
-        except IntegrityError as exc:
-            raise ClientException(status_code=HTTP_409_CONFLICT, detail=str(exc)) from exc
+async def provide_transaction(db_session: AsyncSession) -> AsyncGenerator[AsyncSession, None]:
+    try:
+        async with db_session.begin():
+            yield db_session
+    except IntegrityError as exc:
+        raise ClientException(
+            status_code=HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
 
 
 
@@ -91,6 +97,13 @@ async def update_item(item_title: str, data: TodoItem, transaction: AsyncSession
     todo_item.title = data.title
     todo_item.done = data.done
     return todo_item
+
+
+
+
+db_config = SQLAlchemyAsyncConfig(
+    connection_string="sqlite+aiosqlite:///todo.sqlite", metadata=Base.metadata, create_all=True
+)
 
 
 app = Litestar(
